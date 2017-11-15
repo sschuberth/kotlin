@@ -41,6 +41,8 @@ val ideaProjectResources =  project(":idea").the<JavaPluginConvention>().sourceS
 
 evaluationDependsOn(":prepare:idea-plugin")
 
+val springClasspath by configurations.creating
+
 dependencies {
     compileOnly(project(":kotlin-reflect-api"))
     compile(projectDist(":kotlin-stdlib"))
@@ -87,6 +89,12 @@ dependencies {
     testRuntime(project(":kotlin-allopen-compiler-plugin")) { isTransitive = false }
     testRuntime(files("${System.getProperty("java.home")}/../lib/tools.jar"))
     testRuntime(project(":plugins:kapt3-idea")) { isTransitive = false }
+
+    springClasspath(commonDep("org.springframework", "spring-core"))
+    springClasspath(commonDep("org.springframework", "spring-beans"))
+    springClasspath(commonDep("org.springframework", "spring-context"))
+    springClasspath(commonDep("org.springframework", "spring-tx"))
+    springClasspath(commonDep("org.springframework", "spring-web"))
 }
 
 afterEvaluate {
@@ -193,6 +201,9 @@ projectTest {
     dependsOn(prepareResources)
     dependsOn(preparePluginXml)
     workingDir = rootDir
+    doFirst {
+        systemProperty("spring.classpath", springClasspath.asPath)
+    }
 }
 
 val generateTests by generator("org.jetbrains.kotlin.tests.GenerateUltimateTestsKt")
