@@ -968,7 +968,7 @@ compileTestKotlin {
             apply plugin: 'com.android.application'
 
             android {
-                compileSdkVersion 23
+                compileSdkVersion 26
                 buildToolsVersion "23.0.1"
 
                 defaultConfig {
@@ -1103,7 +1103,7 @@ compileTestKotlin {
             apply plugin: 'kotlin-android'
 
             android {
-                compileSdkVersion 23
+                compileSdkVersion 26
                 buildToolsVersion "23.0.1"
 
                 defaultConfig {
