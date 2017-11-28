@@ -147,10 +147,7 @@ val preparedResources = File(buildDir, "prepResources")
 
 sourceSets {
     "main" { projectDefault() }
-    "test" {
-        projectDefault()
-        resources.srcDir(preparedResources)
-    }
+    "test" { projectDefault() }
 }
 
 val ultimatePluginXmlContent: String by lazy {
@@ -216,6 +213,7 @@ projectTest {
     dependsOn(preparePluginXml)
     workingDir = rootDir
     doFirst {
+        classpath.add(files(preparedResources))
         systemProperty("spring.classpath", springClasspath.asPath)
     }
 }
