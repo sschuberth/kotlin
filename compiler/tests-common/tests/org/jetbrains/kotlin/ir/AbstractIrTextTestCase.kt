@@ -29,7 +29,6 @@ import org.jetbrains.kotlin.ir.symbols.IrSymbol
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitorVoid
 import org.jetbrains.kotlin.ir.visitors.acceptChildrenVoid
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.test.KotlinTestUtils
 import org.jetbrains.kotlin.utils.rethrow
 import java.io.File
@@ -77,6 +76,7 @@ abstract class AbstractIrTextTestCase : AbstractIrGeneratorTestCase() {
         for (irTreeFileLabel in expectations.irTreeFileLabels) {
             val actualTrees = irFile.dumpTreesFromLineNumber(irTreeFileLabel.lineNumber)
             KotlinTestUtils.assertEqualsToFile(irTreeFileLabel.expectedTextFile, actualTrees)
+
             verify(irFile)
 
             // Check that deep copy produces an equivalent result
@@ -92,8 +92,7 @@ abstract class AbstractIrTextTestCase : AbstractIrGeneratorTestCase() {
 
         try {
             TestCase.assertEquals(irFileDump, expected.toString(), actual.toString())
-        }
-        catch (e: Throwable) {
+        } catch (e: Throwable) {
             println(irFileDump)
             throw rethrow(e)
         }
@@ -145,28 +144,31 @@ abstract class AbstractIrTextTestCase : AbstractIrGeneratorTestCase() {
             val expectedDispatchReceiver = functionDescriptor.dispatchReceiverParameter
             val actualDispatchReceiver = declaration.dispatchReceiverParameter?.descriptor
             if (expectedDispatchReceiver != actualDispatchReceiver) {
-                error("$functionDescriptor: Dispatch receiver parameter mismatch: " +
-                      "expected $expectedDispatchReceiver, actual $actualDispatchReceiver")
+                error(
+                    "$functionDescriptor: Dispatch receiver parameter mismatch: " +
+                            "expected $expectedDispatchReceiver, actual $actualDispatchReceiver"
+                )
             }
 
-            val expectedExtensionReceiver  = functionDescriptor.extensionReceiverParameter
+            val expectedExtensionReceiver = functionDescriptor.extensionReceiverParameter
             val actualExtensionReceiver = declaration.extensionReceiverParameter?.descriptor
             if (expectedExtensionReceiver != actualExtensionReceiver) {
-                error("$functionDescriptor: Extension receiver parameter mismatch: " +
-                      "expected $expectedExtensionReceiver, actual $actualExtensionReceiver")
+                error(
+                    "$functionDescriptor: Extension receiver parameter mismatch: " +
+                            "expected $expectedExtensionReceiver, actual $actualExtensionReceiver"
+                )
             }
 
             val declaredValueParameters = declaration.valueParameters.map { it.descriptor }
             val actualValueParameters = functionDescriptor.valueParameters
             if (declaredValueParameters.size != actualValueParameters.size) {
                 error("$functionDescriptor: Value parameters mismatch: $declaredValueParameters != $actualValueParameters")
-            }
-            else {
+            } else {
                 declaredValueParameters.zip(actualValueParameters).forEach { (declaredValueParameter, actualValueParameter) ->
-                    if (declaredValueParameter != actualValueParameter) {
-                        error("$functionDescriptor: Value parameters mismatch: $declaredValueParameter != $actualValueParameter")
+                        if (declaredValueParameter != actualValueParameter) {
+                            error("$functionDescriptor: Value parameters mismatch: $declaredValueParameter != $actualValueParameter")
+                        }
                     }
-                }
             }
         }
 
@@ -207,18 +209,21 @@ abstract class AbstractIrTextTestCase : AbstractIrGeneratorTestCase() {
             checkTypeParameters(declaration.descriptor, declaration, declaration.descriptor.declaredTypeParameters)
         }
 
-        private fun checkTypeParameters(descriptor: DeclarationDescriptor, declaration: IrTypeParametersContainer, expectedTypeParameters: List<TypeParameterDescriptor>) {
+        private fun checkTypeParameters(
+            descriptor: DeclarationDescriptor,
+            declaration: IrTypeParametersContainer,
+            expectedTypeParameters: List<TypeParameterDescriptor>
+        ) {
             val declaredTypeParameters = declaration.typeParameters.map { it.descriptor }
 
             if (declaredTypeParameters.size != expectedTypeParameters.size) {
                 error("$descriptor: Type parameters mismatch: $declaredTypeParameters != $expectedTypeParameters")
-            }
-            else {
+            } else {
                 declaredTypeParameters.zip(expectedTypeParameters).forEach { (declaredTypeParameter, expectedTypeParameter) ->
-                    if (declaredTypeParameter != expectedTypeParameter) {
-                        error("$descriptor: Type parameters mismatch: $declaredTypeParameter != $expectedTypeParameter")
+                        if (declaredTypeParameter != expectedTypeParameter) {
+                            error("$descriptor: Type parameters mismatch: $declaredTypeParameter != $expectedTypeParameter")
+                        }
                     }
-                }
             }
         }
     }
@@ -240,13 +245,10 @@ abstract class AbstractIrTextTestCase : AbstractIrGeneratorTestCase() {
         private val EXTERNAL_FILE_PATTERN = Regex("""// EXTERNAL_FILE""")
 
         internal fun shouldDumpDependencies(wholeFile: File): Boolean =
-                DUMP_DEPENDENCIES_PATTERN.containsMatchIn(wholeFile.readText())
+            DUMP_DEPENDENCIES_PATTERN.containsMatchIn(wholeFile.readText())
 
         internal fun TestFile.isExternalFile() =
-                EXTERNAL_FILE_PATTERN.containsMatchIn(content)
-
-        internal fun KtFile.isExternalFile() =
-                EXTERNAL_FILE_PATTERN.containsMatchIn(text)
+            EXTERNAL_FILE_PATTERN.containsMatchIn(content)
 
         internal fun parseExpectations(dir: File, testFile: TestFile): Expectations {
             val regexps = ArrayList<RegexpInText>()

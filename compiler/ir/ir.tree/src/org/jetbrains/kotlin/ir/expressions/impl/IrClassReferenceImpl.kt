@@ -27,33 +27,32 @@ import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.types.KotlinType
 
 class IrClassReferenceImpl(
+    startOffset: Int,
+    endOffset: Int,
+    type: KotlinType,
+    symbol: IrClassifierSymbol
+) : IrClassReference,
+    IrTerminalDeclarationReferenceBase<IrClassifierSymbol, ClassifierDescriptor>(
+        startOffset, endOffset, type,
+        symbol, symbol.descriptor
+    ) {
+    @Deprecated("Creates unbound symbols")
+    constructor(
         startOffset: Int,
         endOffset: Int,
         type: KotlinType,
-        symbol: IrClassifierSymbol
-) : IrClassReference,
-        IrTerminalDeclarationReferenceBase<IrClassifierSymbol, ClassifierDescriptor>(
-                startOffset, endOffset, type,
-                symbol, symbol.descriptor
-        )
-{
-    @Deprecated("Creates unbound symbols")
-    constructor(
-            startOffset: Int,
-            endOffset: Int,
-            type: KotlinType,
-            descriptor: ClassifierDescriptor
+        descriptor: ClassifierDescriptor
     ) : this(startOffset, endOffset, type, createClassifierSymbolForClassReference(descriptor))
 
     override val descriptor: ClassifierDescriptor get() = symbol.descriptor
 
     override fun <R, D> accept(visitor: IrElementVisitor<R, D>, data: D): R =
-            visitor.visitClassReference(this, data)
+        visitor.visitClassReference(this, data)
 }
 
 internal fun createClassifierSymbolForClassReference(descriptor: ClassifierDescriptor): IrClassifierSymbol =
-        when (descriptor) {
-            is ClassDescriptor -> IrClassSymbolImpl(descriptor)
-            is TypeParameterDescriptor -> IrTypeParameterSymbolImpl(descriptor)
-            else -> throw IllegalArgumentException("Unexpected referenced classifier: $descriptor")
-        }
+    when (descriptor) {
+        is ClassDescriptor -> IrClassSymbolImpl(descriptor)
+        is TypeParameterDescriptor -> IrTypeParameterSymbolImpl(descriptor)
+        else -> throw IllegalArgumentException("Unexpected referenced classifier: $descriptor")
+    }

@@ -37,14 +37,18 @@ class ExternalDependenciesGenerator(val symbolTable: SymbolTable, val irBuiltIns
     }
 
     private fun generateModuleStub(collector: DependenciesCollector, moduleDescriptor: ModuleDescriptor): IrModuleFragment =
-            stubGenerator.generateEmptyModuleFragmentStub(moduleDescriptor, irBuiltIns).also { irDependencyModule ->
-                collector.getPackageFragments(moduleDescriptor).mapTo(irDependencyModule.externalPackageFragments) { packageFragmentDescriptor ->
-                    generatePackageStub(packageFragmentDescriptor, collector.getTopLevelDescriptors(packageFragmentDescriptor))
-                }
+        stubGenerator.generateEmptyModuleFragmentStub(moduleDescriptor, irBuiltIns).also { irDependencyModule ->
+                collector.getPackageFragments(moduleDescriptor)
+                    .mapTo(irDependencyModule.externalPackageFragments) { packageFragmentDescriptor ->
+                        generatePackageStub(packageFragmentDescriptor, collector.getTopLevelDescriptors(packageFragmentDescriptor))
+                    }
             }
 
-    private fun generatePackageStub(packageFragmentDescriptor: PackageFragmentDescriptor, topLevelDescriptors: Collection<DeclarationDescriptor>): IrExternalPackageFragment =
-            stubGenerator.generateEmptyExternalPackageFragmentStub(packageFragmentDescriptor).also { irExternalPackageFragment ->
+    private fun generatePackageStub(
+        packageFragmentDescriptor: PackageFragmentDescriptor,
+        topLevelDescriptors: Collection<DeclarationDescriptor>
+    ): IrExternalPackageFragment =
+        stubGenerator.generateEmptyExternalPackageFragmentStub(packageFragmentDescriptor).also { irExternalPackageFragment ->
                 topLevelDescriptors.mapTo(irExternalPackageFragment.declarations) {
                     stubGenerator.generateMemberStub(it)
                 }

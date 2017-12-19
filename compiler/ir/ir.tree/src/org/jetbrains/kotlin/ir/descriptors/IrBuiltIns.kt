@@ -44,7 +44,7 @@ class IrBuiltIns(val builtIns: KotlinBuiltIns) {
         val operatorDescriptor = IrSimpleBuiltinOperatorDescriptorImpl(packageFragment, Name.identifier(name), returnType)
         for ((i, valueParameterType) in valueParameterTypes.withIndex()) {
             operatorDescriptor.addValueParameter(
-                    IrBuiltinValueParameterDescriptorImpl(operatorDescriptor, Name.identifier("arg$i"), i, valueParameterType)
+                IrBuiltinValueParameterDescriptorImpl(operatorDescriptor, Name.identifier("arg$i"), i, valueParameterType)
             )
         }
         return addStubToPackageFragment(operatorDescriptor)
@@ -57,7 +57,7 @@ class IrBuiltIns(val builtIns: KotlinBuiltIns) {
     }
 
     private fun <T : SimpleFunctionDescriptor> T.addStub(): IrSimpleFunction =
-            addStubToPackageFragment(this)
+        addStubToPackageFragment(this)
 
     val bool = builtIns.booleanType
     val any = builtIns.anyType
@@ -102,20 +102,20 @@ class IrBuiltIns(val builtIns: KotlinBuiltIns) {
     val enumValueOfSymbol = enumValueOfFun.symbol
 
     private fun createEnumValueOfFun(): IrSimpleFunction =
-            SimpleFunctionDescriptorImpl.create(
-                    packageFragment,
-                    Annotations.EMPTY,
-                    Name.identifier("enumValueOf"),
-                    CallableMemberDescriptor.Kind.SYNTHESIZED,
-                    SourceElement.NO_SOURCE
-            ).apply {
+        SimpleFunctionDescriptorImpl.create(
+            packageFragment,
+            Annotations.EMPTY,
+            Name.identifier("enumValueOf"),
+            CallableMemberDescriptor.Kind.SYNTHESIZED,
+            SourceElement.NO_SOURCE
+        ).apply {
                 val typeParameterT = TypeParameterDescriptorImpl.createWithDefaultBound(
-                        this, Annotations.EMPTY, true, Variance.INVARIANT, Name.identifier("T"), 0
+                    this, Annotations.EMPTY, true, Variance.INVARIANT, Name.identifier("T"), 0
                 )
 
                 val valueParameterName = ValueParameterDescriptorImpl(
-                        this, null, 0, Annotations.EMPTY, Name.identifier("name"), builtIns.stringType,
-                        false, false, false, null, SourceElement.NO_SOURCE
+                    this, null, 0, Annotations.EMPTY, Name.identifier("name"), builtIns.stringType,
+                    false, false, false, null, SourceElement.NO_SOURCE
                 )
 
                 val returnType = KotlinTypeFactory.simpleType(Annotations.EMPTY, typeParameterT.typeConstructor, listOf(), false)

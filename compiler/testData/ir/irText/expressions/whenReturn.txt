@@ -1,9 +1,9 @@
-FILE /whenReturn.kt
-  FUN public fun toString(grade: kotlin.String): kotlin.String
-    VALUE_PARAMETER value-parameter grade: kotlin.String
+FILE fqName:'<root>' fileName:'/whenReturn.kt'
+  FUN name:toString visibility:public modality:FINAL <> (grade:kotlin.String) returnType:String flags:''
+    VALUE_PARAMETER name:'grade' index:0 type:kotlin.String flags:''
     BLOCK_BODY
       BLOCK type=kotlin.Nothing origin=WHEN
-        VAR IR_TEMPORARY_VARIABLE val tmp0_subject: kotlin.String
+        VAR IR_TEMPORARY_VARIABLE name:'tmp0_subject' type:kotlin.String flags:'val'
           GET_VAR 'value-parameter grade: String' type=kotlin.String origin=null
         WHEN type=kotlin.Nothing origin=WHEN
           BRANCH
