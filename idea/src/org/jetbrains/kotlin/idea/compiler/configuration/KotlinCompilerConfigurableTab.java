@@ -140,7 +140,7 @@ public class KotlinCompilerConfigurableTab implements SearchableConfigurable, Co
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            restrictAPIVersions(getSelectedLanguageVersionView().getVersion());
+                            restrictAPIVersions(getSelectedLanguageVersionView());
                         }
                     }
             );
@@ -319,8 +319,10 @@ public class KotlinCompilerConfigurableTab implements SearchableConfigurable, Co
     }
 
     @SuppressWarnings("unchecked")
-    public void restrictAPIVersions(LanguageVersion upperBound) {
-        LanguageVersion selectedAPIVersion = getSelectedAPIVersionView().getVersion();
+    public void restrictAPIVersions(VersionView upperBoundView) {
+        VersionView selectedAPIView = getSelectedAPIVersionView();
+        LanguageVersion selectedAPIVersion = selectedAPIView.getVersion();
+        LanguageVersion upperBound = upperBoundView.getVersion();
         List<VersionView> permittedAPIVersions = new ArrayList<>(LanguageVersion.values().length + 1);
         if (isLessOrEqual(VersionView.LatestStable.INSTANCE.getVersion(), upperBound)) {
             permittedAPIVersions.add(VersionView.LatestStable.INSTANCE);
@@ -335,8 +337,8 @@ public class KotlinCompilerConfigurableTab implements SearchableConfigurable, Co
         );
         apiVersionComboBox.setSelectedItem(
                 VersionComparatorUtil.compare(selectedAPIVersion.getVersionString(), upperBound.getVersionString()) <= 0
-                ? selectedAPIVersion
-                : ApiVersion.createByLanguageVersion(upperBound)
+                ? selectedAPIView
+                : upperBoundView
         );
     }
 
@@ -563,7 +565,7 @@ public class KotlinCompilerConfigurableTab implements SearchableConfigurable, Co
     public void reset() {
         reportWarningsCheckBox.setSelected(!commonCompilerArguments.getSuppressWarnings());
         languageVersionComboBox.setSelectedItem(KotlinFacetSettingsKt.getLanguageVersionView(commonCompilerArguments));
-        restrictAPIVersions(getSelectedLanguageVersionView().getVersion());
+        restrictAPIVersions(getSelectedLanguageVersionView());
         apiVersionComboBox.setSelectedItem(KotlinFacetSettingsKt.getApiVersionView(commonCompilerArguments));
         coroutineSupportComboBox.setSelectedItem(CoroutineSupport.byCompilerArguments(commonCompilerArguments));
         additionalArgsOptionsField.setText(compilerSettings.getAdditionalArguments());
