@@ -1,3 +1,19 @@
+/*
+ * Copyright 2010-2017 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 @file:Suppress("PropertyName")
 
 import org.gradle.api.publish.ivy.internal.artifact.DefaultIvyArtifact
@@ -11,11 +27,30 @@ val intellijUltimateEnabled: Boolean by rootProject.extra
 val intellijRepo: String by rootProject.extra
 val intellijReleaseType: String by rootProject.extra
 val intellijVersion = rootProject.extra["versions.intellijSdk"] as String
+val androidStudioRelease = rootProject.extra["versions.androidStudioRelease"] as String?
+val androidStudioBuild = rootProject.extra["versions.androidStudioBuild"] as String?
 val intellijSeparateSdks: Boolean by rootProject.extra
 val installIntellijCommunity = !intellijUltimateEnabled || intellijSeparateSdks
 val installIntellijUltimate = intellijUltimateEnabled
 
+val studioOs by lazy {
+    when {
+        OperatingSystem.current().isWindows -> "windows"
+        OperatingSystem.current().isMacOsX -> "mac"
+        OperatingSystem.current().isLinux -> "linux"
+        else -> {
+            logger.error("Unknown operating system for android tools: ${OperatingSystem.current().name}")
+            ""
+        }
+    }
+}
+
 repositories {
+    if (androidStudioRelease != null) {
+        ivy {
+            artifactPattern("https://dl.google.com/dl/android/studio/ide-zips/$androidStudioRelease/[artifact]-[revision]-$studioOs.zip")
+        }
+    }
     maven { setUrl("$intellijRepo/$intellijReleaseType") }
     maven { setUrl("https://plugins.jetbrains.com/maven") }
 }
@@ -35,13 +70,17 @@ val customDepsRepoModulesDir = File(customDepsRepoDir, "$customDepsOrg/$customDe
 val repoDir = customDepsRepoModulesDir
 
 dependencies {
-    if (installIntellijCommunity) {
-        intellij("com.jetbrains.intellij.idea:ideaIC:$intellijVersion")
+    if (androidStudioRelease != null) {
+        intellij("google:android-studio-ide:$androidStudioBuild")
+    } else {
+        if (installIntellijCommunity) {
+            intellij("com.jetbrains.intellij.idea:ideaIC:$intellijVersion")
+        }
+        if (installIntellijUltimate) {
+            intellijUltimate("com.jetbrains.intellij.idea:ideaIU:$intellijVersion")
+        }
+        sources("com.jetbrains.intellij.idea:ideaIC:$intellijVersion:sources@jar")
     }
-    if (installIntellijUltimate) {
-        intellijUltimate("com.jetbrains.intellij.idea:ideaIU:$intellijVersion")
-    }
-    sources("com.jetbrains.intellij.idea:ideaIC:$intellijVersion:sources@jar")
     `jps-standalone`("com.jetbrains.intellij.idea:jps-standalone:$intellijVersion")
     `jps-build-test`("com.jetbrains.intellij.idea:jps-build-test:$intellijVersion")
     `intellij-core`("com.jetbrains.intellij.idea:intellij-core:$intellijVersion")
@@ -71,13 +110,17 @@ val unzipIntellijCore by tasks.creating { configureExtractFromConfigurationTask(
 
 val unzipJpsStandalone by tasks.creating { configureExtractFromConfigurationTask(`jps-standalone`) { zipTree(it.singleFile) } }
 
-val copyIntellijSdkSources by tasks.creating { configureExtractFromConfigurationTask(sources) { it.singleFile } }
+val copyIntellijSdkSources by tasks.creating {
+    if (androidStudioRelease == null) {
+        configureExtractFromConfigurationTask(sources) { it.singleFile }
+    }
+}
 
 val copyJpsBuildTest by tasks.creating { configureExtractFromConfigurationTask(`jps-build-test`) { it.singleFile } }
 
 val unzipNodeJSPlugin by tasks.creating { configureExtractFromConfigurationTask(`plugins-NodeJS`) { zipTree(it.singleFile) } }
 
-fun writeIvyXml(moduleName: String, fileName: String, jarFiles: FileCollection, baseDir: File, sourcesJar: File) {
+fun writeIvyXml(moduleName: String, fileName: String, jarFiles: FileCollection, baseDir: File, sourcesJar: File?) {
     with(IvyDescriptorFileGenerator(DefaultIvyPublicationIdentity(customDepsOrg, moduleName, intellijVersion))) {
         addConfiguration(DefaultIvyConfiguration("default"))
         addConfiguration(DefaultIvyConfiguration("sources"))
@@ -87,8 +130,10 @@ fun writeIvyXml(moduleName: String, fileName: String, jarFiles: FileCollection, 
                 addArtifact(DefaultIvyArtifact(it, relativeName, "jar", "jar", null).also { it.conf = "default" })
             }
         }
-        val sourcesArtifactName = sourcesJar.name.removeSuffix(".jar").substringBefore("-")
-        addArtifact(DefaultIvyArtifact(sourcesJar, sourcesArtifactName, "jar", "sources", "sources").also { it.conf = "sources" })
+        if (sourcesJar != null) {
+            val sourcesArtifactName = sourcesJar.name.removeSuffix(".jar").substringBefore("-")
+            addArtifact(DefaultIvyArtifact(sourcesJar, sourcesArtifactName, "jar", "sources", "sources").also { it.conf = "sources" })
+        }
         writeTo(File(customDepsRepoModulesDir, "$fileName.ivy.xml"))
     }
 }
@@ -125,7 +170,7 @@ val prepareIvyXmls by tasks.creating {
     }
 
     doFirst {
-        val sourcesFile = File(repoDir, "${sources.name}/${sources.singleFile.name}")
+        val sourcesFile = if (sources.isEmpty) null else File(repoDir, "${sources.name}/${sources.singleFile.name}")
 
         if (installIntellijCommunity) {
             writeIvyXml(intellij.name, intellij.name,
