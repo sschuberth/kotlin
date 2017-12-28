@@ -1,3 +1,19 @@
+/*
+ * Copyright 2010-2017 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 apply { plugin("kotlin") }
 
 val androidSdk by configurations.creating
@@ -17,14 +33,14 @@ dependencies {
     compile(project(":js:js.frontend"))
 
     compileOnly(intellijDep()) { includeJars("openapi", "idea", "external-system-rt", "forms_rt", "extensions", "jdom", "util") }
-    compileOnly(intellijPluginDep("gradle")) { includeJars("gradle-tooling-api-3.5", "gradle", "gradle-base-services-3.5") }
+    compileOnly(intellijPluginDep("gradle")) { includeJars("gradle-tooling-api", "gradle", "gradle-base-services", rootProject = rootProject) }
     compileOnly(intellijPluginDep("Groovy")) { includeJars("Groovy") }
     compileOnly(intellijPluginDep("junit")) { includeJars("idea-junit") }
 
     testCompile(projectTests(":idea"))
     testCompile(project(":idea:idea-test-framework"))
 
-    testCompile(intellijPluginDep("gradle")) { includeJars("gradle-wrapper-3.5", "gradle-base-services-3.5", "gradle-tooling-extension-impl", "gradle-tooling-api-3.5", "gradle") }
+    testCompile(intellijPluginDep("gradle")) { includeJars("gradle-wrapper", "gradle-base-services", "gradle-tooling-extension-impl", "gradle-tooling-api", "gradle", rootProject = rootProject) }
     testCompileOnly(intellijPluginDep("Groovy")) { includeJars("Groovy") }
     testCompileOnly(intellijDep()) { includeJars("groovy-all-2.4.6", "idea_rt") }
 
