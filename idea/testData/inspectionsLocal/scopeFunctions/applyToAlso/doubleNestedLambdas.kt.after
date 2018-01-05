@@ -1,0 +1,9 @@
+// WITH_RUNTIME
+
+val x = hashSetOf("abc").<caret>also { p ->
+    p.forEach {
+        p.forEach {
+            println(p)
+        }
+    }
+}
