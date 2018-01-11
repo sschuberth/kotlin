@@ -1,1 +1,2 @@
 // ABSENT: min/nonExistingSourceFile.js
+// EXISTS: min/simple.js

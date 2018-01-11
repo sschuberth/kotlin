@@ -171,7 +171,7 @@ class K2JSDce : CLITool<K2JSDceArguments>() {
                     else -> {
                         messageCollector.report(
                             CompilerMessageSeverity.WARNING,
-                            "invalid file name '$fileName'; must end either with '.js', '.zip' or '.jar'"
+                            "invalid file name '${file.absolutePath}'; must end either with '.js', '.zip' or '.jar'"
                         )
                         null
                     }
