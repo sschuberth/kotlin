@@ -254,6 +254,7 @@ class KotlinCodeFragmentFactory : CodeFragmentFactory() {
                         }
                     } catch (e: Throwable) {
                         // ignored because text can be invalid
+                        LOG.error("Couldn't convert expression:\n`${javaExpression.text}`", e)
                     }
                 }
                 return convertedFragment ?: kotlinCodeFragment
